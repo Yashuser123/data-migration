@@ -128,7 +128,10 @@
 								"waitOnCompletion": true,
 								"parameters": {
 									"TableName": "@pipeline().parameters.TableName",
-									"NewWatermarkValue": "@pipeline().parameters.NewWatermarkValue"
+									"NewWatermarkValue": {
+										"value": "@activity('Lookup2').output.firstRow.NewWatermarkValue",
+										"type": "Expression"
+									}
 								}
 							}
 						}
