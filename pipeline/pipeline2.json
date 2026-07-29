@@ -101,7 +101,10 @@
 							"outputs": [
 								{
 									"referenceName": "DelimitedText1",
-									"type": "DatasetReference"
+									"type": "DatasetReference",
+									"parameters": {
+										"FolderName": "@pipeline().parameters.TableName"
+									}
 								}
 							]
 						},
@@ -127,7 +130,10 @@
 								},
 								"waitOnCompletion": true,
 								"parameters": {
-									"TableName": "@pipeline().parameters.TableName",
+									"TableName": {
+										"value": "@pipeline().parameters.TableName",
+										"type": "Expression"
+									},
 									"NewWatermarkValue": {
 										"value": "@activity('Lookup2').output.firstRow.NewWatermarkValue",
 										"type": "Expression"

@@ -18,11 +18,17 @@
 					"storedProcedureName": "[dbo].[UpdateWatermark]",
 					"storedProcedureParameters": {
 						"NewWatermarkValue": {
-							"value": "@pipeline().parameters.NewWatermarkValue",
+							"value": {
+								"value": "@pipeline().parameters.NewWatermarkValue",
+								"type": "Expression"
+							},
 							"type": "DateTime"
 						},
 						"TableName": {
-							"value": "@pipeline().parameters.TableName",
+							"value": {
+								"value": "@pipeline().parameters.TableName",
+								"type": "Expression"
+							},
 							"type": "String"
 						}
 					}
