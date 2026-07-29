@@ -3,9 +3,11 @@
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "AzureBlobStorage4",
-			"type": "LinkedServiceReference",
-			"parameters": {
-				"FolderName": "@pipeline().parameters.TableName"
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"FolderName": {
+				"type": "string"
 			}
 		},
 		"annotations": [],
@@ -13,7 +15,10 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobStorageLocation",
-				"folderPath": "incremental/@{dataset().FolderName}",
+				"folderPath": {
+					"value": "incremental/@{dataset().FolderName}",
+					"type": "Expression"
+				},
 				"container": "output"
 			},
 			"columnDelimiter": ",",
