@@ -13,7 +13,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobStorageLocation",
-				"folderPath": "incremental/@{dataset().FolderName}"
+				"container": "output"
 			},
 			"compressionCodec": "snappy"
 		},
