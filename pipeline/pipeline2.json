@@ -17,17 +17,135 @@
 				"typeProperties": {
 					"source": {
 						"type": "SqlServerSource",
-						"sqlReaderQuery": "SELECT WatermarkValue FROM WatermarkTable WHERE TableName = '@{item().TableName}'",
+						"sqlReaderQuery": {
+							"value": "@{concat('SELECT MAX(ModifiedDate) AS NewWatermarkValue FROM ', pipeline().parameters.TableName)}",
+							"type": "Expression"
+						},
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
 					"dataset": {
 						"referenceName": "SqlServerTable1",
 						"type": "DatasetReference"
+					},
+					"firstRowOnly": true
+				}
+			},
+			{
+				"name": "If Condition1",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Lookup2",
+						"dependencyConditions": [
+							"Succeeded"
+						]
 					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@and(\n   not(equals(activity('Lookup2').output.firstRow.NewWatermarkValue, null)),\n   greater(\n      activity('Lookup2').output.firstRow.NewWatermarkValue,\n      pipeline().parameters.OldWatermarkValue\n   )\n)",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "Copy data1",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "SqlServerSource",
+									"sqlReaderQuery": {
+										"value": "@{concat(\n  'SELECT * FROM ', pipeline().parameters.TableName,\n  ' WHERE ModifiedDate > ''', pipeline().parameters.OldWatermarkValue,\n  ''' AND ModifiedDate <= ''', activity('Lookup2').output.firstRow.NewWatermarkValue,\n  ''''\n)}",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"sink": {
+									"type": "DelimitedTextSink",
+									"storeSettings": {
+										"type": "AzureBlobStorageWriteSettings"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSettings",
+										"quoteAllText": true,
+										"fileExtension": ".txt"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "SqlServerTable2",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "DelimitedText1",
+									"type": "DatasetReference"
+								}
+							]
+						},
+						{
+							"name": "Execute Pipeline2",
+							"type": "ExecutePipeline",
+							"dependsOn": [
+								{
+									"activity": "Copy data1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "PL_Child_StoredProcedure",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"TableName": "@pipeline().parameters.TableName",
+									"NewWatermarkValue": "@pipeline().parameters.NewWatermarkValue"
+								}
+							}
+						}
+					]
 				}
 			}
 		],
+		"parameters": {
+			"TableName": {
+				"type": "string",
+				"defaultValue": "@item().TableName"
+			},
+			"OldWatermarkValue": {
+				"type": "string",
+				"defaultValue": "@item().WatermarkValue"
+			}
+		},
 		"annotations": []
 	}
 }
