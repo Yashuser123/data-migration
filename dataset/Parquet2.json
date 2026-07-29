@@ -3,7 +3,10 @@
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "AzureBlobStorage2",
-			"type": "LinkedServiceReference"
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"FolderName": "@pipeline().parameters.TableName"
+			}
 		},
 		"annotations": [],
 		"type": "Parquet",
