@@ -13,6 +13,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobStorageLocation",
+				"folderPath": "incremental/@{dataset().FolderName}",
 				"container": "output"
 			},
 			"columnDelimiter": ",",
